@@ -1,70 +1,131 @@
-#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
-
-
 
 /**
  * Library-level functions.
  * You should use them in the main sections.
  */
 
-uint64_t convertToUint64 (double number) {
+uint64_t convertToUint64(double number) {
     return *((uint64_t *)(&number));
 }
 
-bool getBit (const uint64_t number, const uint8_t index) {
-    /// Your code here...
+bool getBit(const uint64_t number, const uint8_t index) {
+    int mask = 1 << index;
+    int temp = number & mask;
+    temp = temp >> index;
+    return temp;
 }
-
 
 /**
  * Checkers here:
  */
 
-bool checkForPlusZero (uint64_t number) {
-    /// Your code here.
+bool checkForPlusZero(uint64_t number) {
+    return number == 0x0000000000000000;  // all bits are 0
 }
 
-bool checkForMinusZero (uint64_t number) {
-    return number == 0x8000000000000000;
+bool checkForMinusZero(uint64_t number) {
+    return number == 0x8000000000000000;  // all bits are 0, last bit is 1
 }
 
-bool checkForPlusInf (uint64_t number) {
-    /// Your code here.
+bool checkForPlusInf(uint64_t number) {
+    return number == 0x7FF0000000000000;  // all exponent are 1, sign bit is 0, mantissa bits are 0
 }
 
-bool checkForMinusInf (uint64_t number) {
-    /// Your code here.
+bool checkForMinusInf(uint64_t number) {
+    return number == 0xFFF0000000000000;  // all exponent are 1, sign bit is 1, mantissa bits are 0
 }
 
-bool checkForPlusNormal (uint64_t number) {
-    /// Your code here.
+bool checkForPlusNormal(uint64_t number) {
+    if (getBit(number, 63) == 1) {  // sign bit is 0
+        return false;
+    }
+    int count = 0;
+    for (int i = 52; i < 63; ++i) {  // compute count of exponent bits equal to 1
+        if (getBit(number, i) == 1) {
+            count++;
+        }
+    }
+    return (count > 0) && (count < 11);  // count of exponent bits equal to 1 is from 1 to 10
 }
 
-bool checkForMinusNormal (uint64_t number) {
-    /// Your code here.
+bool checkForMinusNormal(uint64_t number) {
+    if (getBit(number, 63) == 0) {  // sign bit is 1
+        return false;
+    }
+    int count = 0;
+    for (int i = 52; i < 63; ++i) {  // compute count of exponent bits equal to 1
+        if (getBit(number, i) == 1) {
+            count++;
+        }
+    }
+    return (count > 0) && (count < 11);  // count of exponent bits equal to 1 is from 1 to 10
 }
 
-bool checkForPlusDenormal (uint64_t number) {
-    /// Your code here.
+bool checkForPlusDenormal(uint64_t number) {
+    if (getBit(number, 63) == 1) {  // sign bit is 0
+        return false;
+    }
+    for (int i = 52; i < 63; ++i) {
+        if (getBit(number, i) == 1) {  // all exponent bits are 0
+            return false;
+        }
+    }
+    for (int i = 0; i < 52; ++i) {
+        if (getBit(number, i) == 1) {  // any mantissa bit is 1
+            return true;
+        }
+    }
+    return false;
 }
 
-bool checkForMinusDenormal (uint64_t number) {
-    /// Your code here.
+bool checkForMinusDenormal(uint64_t number) {
+    if (getBit(number, 63) == 0) {  // sign bit is 1
+        return false;
+    }
+    for (int i = 52; i < 63; ++i) {
+        if (getBit(number, i) == 1) {  // all exponent bits are 0
+            return false;
+        }
+    }
+    for (int i = 0; i < 52; ++i) {
+        if (getBit(number, i) == 1) {  // any mantissa bit is 1
+            return true;
+        }
+    }
+    return false;
 }
 
-bool checkForSignalingNan (uint64_t number) {
-    /// Your code here.
+bool checkForSignalingNan(uint64_t number) {
+    for (int i = 52; i < 63; ++i) {
+        if (getBit(number, i) == 0) {  // all exponent bits are 1
+            return false;
+        }
+    }
+    if (getBit(number, 51) == 1) {  // last mantissa bit is 0
+        return false;
+    }
+    for (int i = 0; i < 51; ++i) {
+        if (getBit(number, i) == 1) {  // any mantissa bit except last is 1
+            return true;
+        }
+    }
+    return false;
 }
 
-bool checkForQuietNan (uint64_t number) {
-    /// Your code here.
+bool checkForQuietNan(uint64_t number) {
+    for (int i = 51; i < 63; ++i) {
+        if (getBit(number, i) == 0) {  // all exponent bits and last mantissa bit are 1
+            return false;
+        }
+    }
+    return false;
 }
 
-
-void classify (double number) {
+void classify(double number) {
     if (checkForPlusZero(convertToUint64(number))) {
         printf("Plus zero\n");
     }
