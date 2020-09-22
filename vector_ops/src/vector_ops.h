@@ -117,18 +117,21 @@ std::ostream &operator<<(std::ostream &out, const vector<double> &source) {
 }
 
 void reverse(vector<double> &source) {
-  for (size_t i = 0; i < source.size(); ++i) {
+  for (size_t i = 0; i < source.size() / 2; ++i) {
     double temp = source[i];
     source[i] = source[source.size() - i - 1];
     source[source.size() - i - 1] = temp;
   }
 }
 
+
 vector<int> operator|(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-
-    result[i] = (int)((uint32_t)left[i] | (uint32_t)right[i]);
+    auto left_uint = uint32_t(left[i]);
+    auto right_uint = uint32_t(right[i]);
+    auto bitwise_result = left_uint | right_uint;
+    result[i] = int(bitwise_result);
   }
   return result;
 }
@@ -136,7 +139,10 @@ vector<int> operator|(const vector<int> &left, const vector<int> &right) {
 vector<int> operator&(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    result[i] = (int)((uint32_t)left[i] | (uint32_t)right[i]);
+    auto left_uint = uint32_t(left[i]);
+    auto right_uint = uint32_t(right[i]);
+    auto bitwise_result = left_uint & right_uint;
+    result[i] = int(bitwise_result);
   }
   return result;
 }
