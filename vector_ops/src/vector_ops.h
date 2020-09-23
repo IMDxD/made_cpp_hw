@@ -12,8 +12,7 @@ namespace task {
 const double TOL = 1e-12;
 
 vector<double> operator+(const vector<double> &source) {
-  vector<double> result = source;
-  return result;
+  return source;
 }
 
 vector<double> operator-(const vector<double> &source) {
@@ -61,7 +60,8 @@ bool operator||(const vector<double> &left, const vector<double> &right) {
   double fraction;
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
-      if (flag && (abs(abs(left[i] / right[i]) - fraction) > TOL)) {
+      double fraction_dif = abs(left[i] / right[i]) - fraction;
+      if (flag && (abs(fraction_dif) > TOL)) {
         return false;
       } else if (!flag) {
         fraction = abs(left[i] / right[i]);
@@ -79,7 +79,8 @@ bool operator&&(const vector<double> &left, const vector<double> &right) {
   double fraction;
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
-      if (flag && abs(left[i] / right[i] - fraction) > TOL) {
+      double fraction_dif = abs(left[i] / right[i]) - fraction;
+      if (flag && abs(fraction_dif) > TOL) {
         return false;
       } else if (!flag) {
         fraction = left[i] / right[i];
@@ -128,10 +129,10 @@ void reverse(vector<double> &source) {
 vector<int> operator|(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = uint32_t(left[i]);
-    auto right_uint = uint32_t(right[i]);
+    auto left_uint = (uint32_t)left[i];
+    auto right_uint = (uint32_t)right[i];
     auto bitwise_result = left_uint | right_uint;
-    result[i] = int(bitwise_result);
+    result[i] = (int)bitwise_result;
   }
   return result;
 }
@@ -139,10 +140,10 @@ vector<int> operator|(const vector<int> &left, const vector<int> &right) {
 vector<int> operator&(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = uint32_t(left[i]);
-    auto right_uint = uint32_t(right[i]);
+    auto left_uint = (uint32_t)left[i];
+    auto right_uint = (uint32_t)right[i];
     auto bitwise_result = left_uint & right_uint;
-    result[i] = int(bitwise_result);
+    result[i] = (int)bitwise_result;
   }
   return result;
 }
