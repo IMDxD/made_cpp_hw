@@ -60,11 +60,11 @@ bool operator||(const vector<double> &left, const vector<double> &right) {
   double fraction;
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
-      double fraction_dif = abs(left[i] / right[i]) - fraction;
+      double fraction_dif = left[i] / right[i] - fraction;
       if (flag && (abs(fraction_dif) > TOL)) {
         return false;
       } else if (!flag) {
-        fraction = abs(left[i] / right[i]);
+        fraction = left[i] / right[i];
         flag = true;
       }
     } else if (left[i] || right[i]) {
@@ -79,7 +79,7 @@ bool operator&&(const vector<double> &left, const vector<double> &right) {
   double fraction;
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
-      double fraction_dif = abs(left[i] / right[i]) - fraction;
+      double fraction_dif = left[i] / right[i] - fraction;
       if (flag && abs(fraction_dif) > TOL) {
         return false;
       } else if (!flag) {
