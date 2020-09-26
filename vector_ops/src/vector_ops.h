@@ -5,7 +5,6 @@
 #include "cmath"
 
 using std::vector;
-using std::abs;
 
 namespace task {
 
@@ -61,7 +60,7 @@ bool operator||(const vector<double> &left, const vector<double> &right) {
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
       double fraction_dif = left[i] / right[i] - fraction;
-      if (flag && (abs(fraction_dif) > TOL)) {
+      if (flag && (fabs(fraction_dif) > TOL)) {
         return false;
       } else if (!flag) {
         fraction = left[i] / right[i];
@@ -80,7 +79,7 @@ bool operator&&(const vector<double> &left, const vector<double> &right) {
   for (size_t i = 0; i < left.size(); ++i) {
     if (left[i] && right[i]) {
       double fraction_dif = left[i] / right[i] - fraction;
-      if (flag && abs(fraction_dif) > TOL) {
+      if (flag && fabs(fraction_dif) > TOL) {
         return false;
       } else if (!flag) {
         fraction = left[i] / right[i];
