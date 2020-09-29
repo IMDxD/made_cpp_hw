@@ -4,18 +4,17 @@
 typedef std::function<int(int)> Op;
 
 Op compose(size_t n, Op ops[]) {
-
-  if (n == 0) {
-    return [](int x) -> int {
-      return x;
-    };
-  } else if (n == 1) {
-    return ops[0];
-  } else {
-    return [n, ops](int x) -> int {
-      return compose(n - 1, ops)(ops[n - 1](x));
-    };
+  Op f =
+      [](int x) -> int {
+        return x;
+      };
+  while (n--) {
+    f =
+        [f, ops, n](int x) -> int {
+          return ops[n](f(x));
+        };
   }
+  return f;
 }
 
 int main() {
