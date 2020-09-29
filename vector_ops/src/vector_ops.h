@@ -124,14 +124,13 @@ void reverse(vector<double> &source) {
   }
 }
 
-
 vector<int> operator|(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = (uint32_t)left[i];
-    auto right_uint = (uint32_t)right[i];
+    auto left_uint = (uint32_t) left[i];
+    auto right_uint = (uint32_t) right[i];
     auto bitwise_result = left_uint | right_uint;
-    result[i] = (int)bitwise_result;
+    result[i] = (int) bitwise_result;
   }
   return result;
 }
@@ -139,10 +138,10 @@ vector<int> operator|(const vector<int> &left, const vector<int> &right) {
 vector<int> operator&(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = (uint32_t)left[i];
-    auto right_uint = (uint32_t)right[i];
+    auto left_uint = (uint32_t) left[i];
+    auto right_uint = (uint32_t) right[i];
     auto bitwise_result = left_uint & right_uint;
-    result[i] = (int)bitwise_result;
+    result[i] = (int) bitwise_result;
   }
   return result;
 }
