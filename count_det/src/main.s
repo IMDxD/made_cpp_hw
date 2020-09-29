@@ -3,9 +3,7 @@
 .global count_det
 
 count_det:
-    push {r4}
-    push {r5}
-    push {r6}
+    push {r4-r6}
     ldr r1, [r0], #4 //x11
     ldr r2, [r0], #4 //x12
     ldr r3, [r0], #4 //x13
@@ -29,7 +27,5 @@ count_det:
     ldr r4, [r0], #4 //x33
     mul r3, r6, r4  //x11x22x33 - x12x21x33
     add r0, r1, r3 //x13x21x32 - x11x23x32 + x12x23x31 - x13x22x31 + x11x22x33 - x12x21x33
-    pop {r6}
-    pop {r5}
-    pop {r4}
+    pop {r4-r6}
     bx lr
