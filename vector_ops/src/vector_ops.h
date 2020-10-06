@@ -11,7 +11,8 @@ namespace task {
 const double TOL = 1e-12;
 
 vector<double> operator+(const vector<double> &source) {
-  return source;
+  vector<double> result = source;
+  return result;
 }
 
 vector<double> operator-(const vector<double> &source) {
