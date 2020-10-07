@@ -12,26 +12,21 @@ class SizeMismatchException : public std::exception {};
 
 class Matrix {
 
- private:
-
-  int rows;
-  int cols;
-  double *array;
-
  public:
 
   Matrix();
   Matrix(size_t rows, size_t cols);
   Matrix(const Matrix &copy);
   Matrix &operator=(const Matrix &a);
+  ~Matrix();
 
   double &get(size_t row, size_t col);
   const double &get(size_t row, size_t col) const;
   void set(size_t row, size_t col, const double &value);
   void resize(size_t new_rows, size_t new_cols);
 
-  double* operator[](size_t row);
-  double* operator[](size_t row) const;
+  double *operator[](size_t row);
+  double *operator[](size_t row) const;
 
   Matrix &operator+=(const Matrix &a);
   Matrix &operator-=(const Matrix &a);
@@ -57,7 +52,15 @@ class Matrix {
   bool operator==(const Matrix &a) const;
   bool operator!=(const Matrix &a) const;
 
-  // Your code goes here...
+  Matrix get_minor(size_t row, size_t col) const;
+  size_t n_rows() const;
+  size_t n_cols() const;
+
+ private:
+
+  size_t rows;
+  size_t cols;
+  double **array;
 
 };
 
