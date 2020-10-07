@@ -35,7 +35,11 @@ Matrix::Matrix(size_t row, size_t col) {
   for (size_t i = 0; i < this->rows; ++i) {
     *(this->array + i) = new double[this->cols];
     for (size_t j = 0; j < this->cols; ++j) {
-      *(*(this->array + i) + j) = 1;
+      if (i == j) {
+        *(*(this->array + i) + j) = 1;
+      } else {
+        *(*(this->array + i) + j) = 0;
+      }
     }
   }
 }
@@ -247,17 +251,17 @@ double Matrix::det() const {
     throw SizeMismatchException();
   }
   if (this->rows == 1) {
-    return this->get(0,0);
+    return this->get(0, 0);
   } else if (this->rows == 2) {
-    return this->get(0,0) * this->get(1,1) - this->get(1,0) * this->get(0,1);
+    return this->get(0, 0) * this->get(1, 1) - this->get(1, 0) * this->get(0, 1);
   } else {
     double d = 0;
     for (size_t i = 0; i < this->cols; ++i) {
       Matrix tmp_matrix = get_minor(0, i);
       if (i % 2 == 0) {
-        d += this->get(0,i) * tmp_matrix.det();
+        d += this->get(0, i) * tmp_matrix.det();
       } else {
-        d -= this->get(0,i) * tmp_matrix.det();
+        d -= this->get(0, i) * tmp_matrix.det();
       }
     }
     return d;
