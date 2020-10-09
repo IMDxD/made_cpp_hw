@@ -75,25 +75,7 @@ bool operator||(const vector<double> &left, const vector<double> &right) {
 }
 
 bool operator&&(const vector<double> &left, const vector<double> &right) {
-  bool flag = false;
-  double fraction;
-  for (size_t i = 0; i < left.size(); ++i) {
-    if (left[i] && right[i]) {
-      double fraction_dif = left[i] / right[i] - fraction;
-      if (flag && fabs(fraction_dif) > TOL) {
-        return false;
-      } else if (!flag) {
-        fraction = left[i] / right[i];
-        if (fraction < 0) {
-          return false;
-        }
-        flag = true;
-      }
-    } else if (left[i] || right[i]) {
-      return false;
-    }
-  }
-  return true;
+  return (left || right) && (left * right > 0);
 }
 
 std::istream &operator>>(std::istream &in, vector<double> &source) {
@@ -128,10 +110,7 @@ void reverse(vector<double> &source) {
 vector<int> operator|(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = (uint32_t) left[i];
-    auto right_uint = (uint32_t) right[i];
-    auto bitwise_result = left_uint | right_uint;
-    result[i] = (int) bitwise_result;
+    result[i] = left[i] | right[i];
   }
   return result;
 }
@@ -139,12 +118,8 @@ vector<int> operator|(const vector<int> &left, const vector<int> &right) {
 vector<int> operator&(const vector<int> &left, const vector<int> &right) {
   vector<int> result(left.size());
   for (int i = 0; i < left.size(); ++i) {
-    auto left_uint = (uint32_t) left[i];
-    auto right_uint = (uint32_t) right[i];
-    auto bitwise_result = left_uint & right_uint;
-    result[i] = (int) bitwise_result;
+    result[i] = left[i] & right[i];
   }
   return result;
 }
-
-}  // namespace task
+}
