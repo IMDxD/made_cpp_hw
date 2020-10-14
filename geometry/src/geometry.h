@@ -51,10 +51,6 @@ struct Point {
 
 class Line {
 
- private:
-  double angle;
-  double bias;
-
  public:
   Line(double new_angle, double new_bias) : angle(new_angle), bias(new_bias) {};
   Line(Point &first, Point &second) {
@@ -80,6 +76,10 @@ class Line {
     Point center = Point(center_x, center_y);
     return center.reflex(target);
   }
+
+ private:
+  double angle;
+  double bias;
 };
 
 class Shape {
@@ -94,8 +94,6 @@ class Shape {
 };
 
 class Polygon : public Shape {
- private:
-  std::vector<Point> vertices;
  public:
 
   Polygon(std::vector<Point> new_vertices) : vertices(new_vertices) {};
@@ -155,4 +153,7 @@ class Polygon : public Shape {
       vertices[i] = center.scale(vertices[i], coefficient);
     }
   }
+
+ private:
+  std::vector<Point> vertices;
 };
