@@ -1,5 +1,7 @@
 #pragma once
 #include "cmath"
+#include <utility>
+
 #include "tr1/cmath"
 #include "vector"
 
@@ -99,6 +101,7 @@ class Shape {
   virtual double perimeter() const = 0;
   virtual double area() const = 0;
   virtual bool operator==(const Shape &another) const = 0;
+  virtual bool operator!=(const Shape &another) const = 0;
   virtual void rotate(Point center, double angle) = 0;
   virtual void reflex(Point center) = 0;
   virtual void reflex(Line axis) = 0;
@@ -108,7 +111,13 @@ class Shape {
 class Polygon : public Shape {
  public:
 
-  explicit Polygon(std::vector<Point> &new_vertices) : vertices(new_vertices) {};
+  explicit Polygon(std::vector<Point> new_vertices) : vertices(std::move(new_vertices)) {};
+
+  Polygon(const Polygon& copy){
+    for (auto& p: copy.vertices){
+      this->vertices.push_back(p);
+    }
+  };
 
   unsigned verticesCount() { return this->vertices.size(); }
 
@@ -141,6 +150,10 @@ class Polygon : public Shape {
 
   bool operator==(const Shape &another) const override {
     return false;
+  }
+
+  bool operator!=(const Shape &another) const override {
+    return !(*this == another);
   }
 
   double perimeter() const override {
@@ -185,7 +198,7 @@ class Polygon : public Shape {
     }
   }
 
- private:
+ protected:
   std::vector<Point> vertices;
 };
 
@@ -213,6 +226,10 @@ class Ellipse : public Shape {
 
   bool operator==(const Shape &another) const override {
     return false;
+  }
+
+  bool operator!=(const Shape &another) const override {
+    return !(*this == another);
   }
 
   bool operator==(const Ellipse &another) const {
