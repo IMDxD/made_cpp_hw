@@ -27,7 +27,7 @@ struct Point {
   Point(double new_x, double new_y) : x(new_x), y(new_y) {};
 
   bool operator==(const Point &right) const {
-    return this->x == right.x && this->y == right.y;
+    return fabs(this->x - right.x) < EPS && fabs(this->y == right.y) < EPS;
   }
 
   bool operator!=(const Point &right) const {
@@ -271,7 +271,7 @@ class Ellipse : public Shape {
   }
 
   bool operator==(const Ellipse &another) const {
-    if (this->ellipse_distance != another.ellipse_distance) {
+    if (fabs(this->ellipse_distance - another.ellipse_distance) > EPS) {
       return false;
     } else if (this->first_focus != another.first_focus) {
       return this->first_focus == another.second_focus && this->second_focus == another.first_focus;
