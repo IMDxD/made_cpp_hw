@@ -45,33 +45,6 @@ int main() {
   g->b = 100;
   ASSERT_TRUE_MSG(g->b == 100, "Wrong const pointer type");
 
-  auto alloc1 = new ChunkAllocator<Test>(128);
-  ASSERT_TRUE_MSG((*alloc1->copies_count) == 1, "Wrong initial count");
-
-  auto alloc2 = new ChunkAllocator<Test>(*alloc1);
-  ASSERT_TRUE_MSG((*alloc1->copies_count) == 2, "Wrong alloc 1 copies count");
-  ASSERT_TRUE_MSG((*alloc2->copies_count) == 2, "Wrong alloc 2 copies count");
-
-  delete alloc1;
-  ASSERT_TRUE_MSG((*alloc2->copies_count) == 1, "Wrong alloc 2 copies count");
-
-  auto alloc3 = new ChunkAllocator<Test>(*alloc2);
-  ASSERT_TRUE_MSG((*alloc2->copies_count) == 2, "Wrong alloc 2 copies count");
-  ASSERT_TRUE_MSG((*alloc3->copies_count) == 2, "Wrong alloc 2 copies count");
-
-  auto* alloc4 = new ChunkAllocator<Test>(128);
-
-  *alloc4 = *alloc2;
-  ASSERT_TRUE_MSG((*alloc2->copies_count) == 3, "Wrong alloc 2 copies count");
-  ASSERT_TRUE_MSG((*alloc3->copies_count) == 3, "Wrong alloc 2 copies count");
-  ASSERT_TRUE_MSG((*alloc4->copies_count) == 3, "Wrong alloc 2 copies count");
-
-  delete alloc2;
-  delete alloc3;
-  alloc4->cur_node = new Chunk(128);
-  delete alloc4;
-  ASSERT_TRUE_MSG(alloc4->cur_node->total_size == 0, "Wrong full destruction");
-
   auto alloc = new ChunkAllocator<Test>(1024);
   Test* test_array1 = alloc->allocate(4);
   Test* test_array2 = alloc->allocate(4);
@@ -91,7 +64,7 @@ int main() {
   }
   Test* test_array5 = alloc->allocate(2);
   ASSERT_TRUE_MSG(test_array5 == test_array1 + 48, "Wrong allocation");
-  auto alloc_destruct2 = alloc;
+  auto alloc_destruct2 = new ChunkAllocator<Test>(*alloc);
   delete alloc_destruct2;
   alloc->construct(test_array1, 1, 2.0);
   ASSERT_TRUE_MSG(test_array1->a == 1 && test_array1->b == 2.0, "Wrong copy destruction");

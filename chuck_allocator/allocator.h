@@ -30,20 +30,17 @@ class ChunkAllocator {
   using difference_type = std::ptrdiff_t;
   template<class U>
   struct rebind { typedef ChunkAllocator<U> other; };
-  Chunk* cur_node;
-  size_t chunk_size;
-  size_t* copies_count;
 
   explicit ChunkAllocator(size_t new_chunk_size) {
     chunk_size = new_chunk_size;
-    cur_node = nullptr;
+    last_chunk = nullptr;
     copies_count = new size_t;
     (*copies_count) = 1;
   };
 
   ChunkAllocator(const ChunkAllocator<T>& copy) {
     chunk_size = copy.chunk_size;
-    cur_node = copy.cur_node;
+    last_chunk = copy.last_chunk;
     copies_count = copy.copies_count;
     (*copies_count) += 1;
   };
@@ -53,9 +50,9 @@ class ChunkAllocator {
       (*this->copies_count) -= 1;
     } else {
       Chunk* prev_node;
-      while (cur_node != nullptr) {
-        prev_node = cur_node;
-        cur_node = cur_node->previous_node;
+      while (last_chunk != nullptr) {
+        prev_node = last_chunk;
+        last_chunk = last_chunk->previous_node;
         delete prev_node;
       }
       delete copies_count;
@@ -68,19 +65,19 @@ class ChunkAllocator {
     }
     chunk_size = other.chunk_size;
     Chunk* prev_node;
-    while (cur_node != nullptr) {
-      prev_node = cur_node;
-      cur_node = cur_node->previous_node;
+    while (last_chunk != nullptr) {
+      prev_node = last_chunk;
+      last_chunk = last_chunk->previous_node;
       delete prev_node;
     }
-    cur_node = other.cur_node;
+    last_chunk = other.last_chunk;
     copies_count = other.copies_count;
     (*copies_count) += 1;
   };
 
   T* allocate(std::size_t n) {
     size_t allocate_memory = n * sizeof(T);
-    Chunk* tmp_chunk = this->cur_node;
+    Chunk* tmp_chunk = this->last_chunk;
     while (tmp_chunk != nullptr) {
       if (tmp_chunk->offset + allocate_memory < tmp_chunk->total_size) {
         break;
@@ -89,8 +86,8 @@ class ChunkAllocator {
     }
     if (tmp_chunk == nullptr) {
       tmp_chunk = new Chunk(this->chunk_size);
-      tmp_chunk->previous_node = this->cur_node;
-      this->cur_node = tmp_chunk;
+      tmp_chunk->previous_node = this->last_chunk;
+      this->last_chunk = tmp_chunk;
     }
     auto return_pointer = tmp_chunk->buffer + tmp_chunk->offset;
     tmp_chunk->offset += allocate_memory;
@@ -109,4 +106,9 @@ class ChunkAllocator {
     p->~T();
   };
 
+ private:
+
+  Chunk* last_chunk;
+  size_t chunk_size;
+  size_t* copies_count;
 };
