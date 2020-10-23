@@ -8,12 +8,65 @@ struct Chunk {
   size_t total_size;
   char* buffer;
   Chunk* previous_node;
+  size_t* copies_count;
 
-  explicit Chunk(size_t total_size) :
-      offset(0),
-      total_size(total_size),
-      buffer(new char[total_size]),
-      previous_node(nullptr) {}
+  explicit Chunk(size_t new_total_size) {
+    offset = 0;
+    total_size = new_total_size;
+    buffer = new char[total_size];
+    previous_node = nullptr;
+    copies_count = new size_t (1);
+  }
+
+  Chunk(const Chunk& copy){
+    this->offset = copy.offset;
+    this->total_size = copy.total_size;
+    this->previous_node = copy.previous_node;
+    this->copies_count = copy.copies_count;
+    this->buffer = copy.buffer;
+    Chunk* cur_chunk = this;
+    while (cur_chunk != nullptr){
+      (*cur_chunk->copies_count) += 1;
+      cur_chunk = cur_chunk->previous_node;
+    }
+  }
+
+  Chunk& operator=(const Chunk& other){
+    if (this == &other){
+      return *this;
+    }
+    remove_buffer();
+    this->offset = other.offset;
+    this->total_size = other.total_size;
+    this->previous_node = other.previous_node;
+    this->copies_count = other.copies_count;
+    this->buffer = other.buffer;
+    Chunk* cur_chunk = this;
+    while (cur_chunk != nullptr){
+      (*cur_chunk->copies_count) += 1;
+      cur_chunk = cur_chunk->previous_node;
+    }
+    return *this;
+  }
+
+  ~Chunk(){
+    remove_buffer();
+  }
+
+ private:
+
+  void remove_buffer(){
+    Chunk* cur_chunk = this;
+    while (cur_chunk != nullptr){
+      if (*cur_chunk->copies_count == 1){
+        delete [] cur_chunk->buffer;
+        delete cur_chunk->copies_count;
+      } else {
+        (*cur_chunk->copies_count) -= 1;
+      }
+      cur_chunk = cur_chunk->previous_node;
+    }
+  }
 
 };
 
@@ -34,45 +87,22 @@ class ChunkAllocator {
   explicit ChunkAllocator(size_t new_chunk_size) {
     chunk_size = new_chunk_size;
     last_chunk = nullptr;
-    copies_count = new size_t;
-    (*copies_count) = 1;
   };
 
   ChunkAllocator(const ChunkAllocator<T>& copy) {
     chunk_size = copy.chunk_size;
-    last_chunk = copy.last_chunk;
-    copies_count = copy.copies_count;
-    (*copies_count) += 1;
+    last_chunk = new Chunk(*copy.last_chunk);
   };
 
   ~ChunkAllocator() {
-    if (*this->copies_count > 1) {
-      (*this->copies_count) -= 1;
-    } else {
-      Chunk* prev_node;
-      while (last_chunk != nullptr) {
-        prev_node = last_chunk;
-        last_chunk = last_chunk->previous_node;
-        delete prev_node;
-      }
-      delete copies_count;
-    }
+    delete last_chunk;
   };
 
   ChunkAllocator& operator=(const ChunkAllocator& other) {
     if (this == &other) {
       return *this;
     }
-    chunk_size = other.chunk_size;
-    Chunk* prev_node;
-    while (last_chunk != nullptr) {
-      prev_node = last_chunk;
-      last_chunk = last_chunk->previous_node;
-      delete prev_node;
-    }
-    last_chunk = other.last_chunk;
-    copies_count = other.copies_count;
-    (*copies_count) += 1;
+    last_chunk = *(*last_chunk = *other.last_chunk);
   };
 
   T* allocate(std::size_t n) {
@@ -110,5 +140,4 @@ class ChunkAllocator {
 
   Chunk* last_chunk;
   size_t chunk_size;
-  size_t* copies_count;
 };

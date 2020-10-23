@@ -65,6 +65,7 @@ int main() {
   Test* test_array5 = alloc->allocate(2);
   ASSERT_TRUE_MSG(test_array5 == test_array1 + 48, "Wrong allocation");
   auto alloc_destruct2 = new ChunkAllocator<Test>(*alloc);
+  alloc_destruct2->allocate(63);
   delete alloc_destruct2;
   alloc->construct(test_array1, 1, 2.0);
   ASSERT_TRUE_MSG(test_array1->a == 1 && test_array1->b == 2.0, "Wrong copy destruction");
