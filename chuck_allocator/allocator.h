@@ -89,7 +89,7 @@ class ChunkAllocator {
     last_chunk = nullptr;
   };
 
-  ChunkAllocator(const ChunkAllocator<T>& copy) {
+  ChunkAllocator(const ChunkAllocator<value_type>& copy) {
     chunk_size = copy.chunk_size;
     last_chunk = new Chunk(*copy.last_chunk);
   };
@@ -105,8 +105,8 @@ class ChunkAllocator {
     last_chunk = *(*last_chunk = *other.last_chunk);
   };
 
-  T* allocate(std::size_t n) {
-    size_t allocate_memory = n * sizeof(T);
+  pointer allocate(std::size_t n) {
+    size_t allocate_memory = n * sizeof(value_type);
     Chunk* tmp_chunk = this->last_chunk;
     while (tmp_chunk != nullptr) {
       if (tmp_chunk->offset + allocate_memory < tmp_chunk->total_size) {
@@ -121,19 +121,19 @@ class ChunkAllocator {
     }
     auto return_pointer = tmp_chunk->buffer + tmp_chunk->offset;
     tmp_chunk->offset += allocate_memory;
-    auto casted = reinterpret_cast<T*>(return_pointer);
+    auto casted = reinterpret_cast<pointer>(return_pointer);
     return casted;
   };
 
-  void deallocate(T* p, std::size_t n) {};
+  void deallocate(pointer p, std::size_t n) {};
 
   template<class... Args>
-  void construct(T* p, Args&& ... args) {
-    new(p) T(args...);
+  void construct(pointer p, Args&& ... args) {
+    new(p) value_type (args...);
   };
 
-  void destroy(T* p) {
-    p->~T();
+  void destroy(pointer p) {
+    p->~value_type();
   };
 
  private:
