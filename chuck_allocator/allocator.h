@@ -2,8 +2,7 @@
 
 #include <cstddef>
 
-const size_t CHUNK_SIZE = 10* 1024 * 1024;
-
+const size_t CHUNK_SIZE = 10 * 1024 * 1024;
 
 struct Chunk {
 
@@ -18,24 +17,24 @@ struct Chunk {
     total_size = CHUNK_SIZE;
     buffer = new char[total_size];
     previous_node = nullptr;
-    copies_count = new size_t (1);
+    copies_count = new size_t(1);
   }
 
-  Chunk(const Chunk& copy){
+  Chunk(const Chunk& copy) {
     this->offset = copy.offset;
     this->total_size = copy.total_size;
     this->previous_node = copy.previous_node;
     this->copies_count = copy.copies_count;
     this->buffer = copy.buffer;
     Chunk* cur_chunk = this;
-    while (cur_chunk != nullptr){
+    while (cur_chunk != nullptr) {
       (*cur_chunk->copies_count) += 1;
       cur_chunk = cur_chunk->previous_node;
     }
   }
 
-  Chunk& operator=(const Chunk& other){
-    if (this == &other){
+  Chunk& operator=(const Chunk& other) {
+    if (this == &other) {
       return *this;
     }
     remove_buffer();
@@ -45,24 +44,24 @@ struct Chunk {
     this->copies_count = other.copies_count;
     this->buffer = other.buffer;
     Chunk* cur_chunk = this;
-    while (cur_chunk != nullptr){
+    while (cur_chunk != nullptr) {
       (*cur_chunk->copies_count) += 1;
       cur_chunk = cur_chunk->previous_node;
     }
     return *this;
   }
 
-  ~Chunk(){
+  ~Chunk() {
     remove_buffer();
   }
 
  private:
 
-  void remove_buffer(){
+  void remove_buffer() {
     Chunk* cur_chunk = this;
-    while (cur_chunk != nullptr){
-      if (*cur_chunk->copies_count == 1){
-        delete [] cur_chunk->buffer;
+    while (cur_chunk != nullptr) {
+      if (*cur_chunk->copies_count == 1) {
+        delete[] cur_chunk->buffer;
         delete cur_chunk->copies_count;
       } else {
         (*cur_chunk->copies_count) -= 1;
@@ -132,7 +131,7 @@ class ChunkAllocator {
 
   template<class... Args>
   void construct(pointer p, Args&& ... args) {
-    new(p) value_type (args...);
+    new(p) value_type(args...);
   };
 
   void destroy(pointer p) {
