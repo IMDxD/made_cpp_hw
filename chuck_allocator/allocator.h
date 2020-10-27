@@ -2,6 +2,9 @@
 
 #include <cstddef>
 
+const size_t CHUNK_SIZE = 10* 1024 * 1024;
+
+
 struct Chunk {
 
   size_t offset;
@@ -10,9 +13,9 @@ struct Chunk {
   Chunk* previous_node;
   size_t* copies_count;
 
-  explicit Chunk(size_t new_total_size) {
+  explicit Chunk() {
     offset = 0;
-    total_size = new_total_size;
+    total_size = CHUNK_SIZE;
     buffer = new char[total_size];
     previous_node = nullptr;
     copies_count = new size_t (1);
@@ -84,8 +87,8 @@ class ChunkAllocator {
   template<class U>
   struct rebind { typedef ChunkAllocator<U> other; };
 
-  explicit ChunkAllocator(size_t new_chunk_size) {
-    chunk_size = new_chunk_size;
+  explicit ChunkAllocator() {
+    chunk_size = CHUNK_SIZE;
     last_chunk = nullptr;
   };
 
@@ -115,7 +118,7 @@ class ChunkAllocator {
       tmp_chunk = tmp_chunk->previous_node;
     }
     if (tmp_chunk == nullptr) {
-      tmp_chunk = new Chunk(this->chunk_size);
+      tmp_chunk = new Chunk();
       tmp_chunk->previous_node = this->last_chunk;
       this->last_chunk = tmp_chunk;
     }
