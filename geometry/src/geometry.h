@@ -27,7 +27,7 @@ struct Point {
   Point(double new_x, double new_y) : x(new_x), y(new_y) {};
 
   bool operator==(const Point &right) const {
-    return fabs(this->x - right.x) < EPS && fabs(this->y == right.y) < EPS;
+    return fabs(this->x - right.x) < EPS && fabs(this->y - right.y) < EPS;
   }
 
   bool operator!=(const Point &right) const {
