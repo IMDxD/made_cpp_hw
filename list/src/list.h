@@ -792,10 +792,13 @@ void list<T, Alloc>::unique() {
   }
 }
 
+
+// TODO: add sort
 template<class T, class Alloc>
 void list<T, Alloc>::sort() {
 
 }
+
 template<class T, class Alloc>
 Alloc list<T, Alloc>::get_allocator() const {
   return self_value_alloc;
