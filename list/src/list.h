@@ -1,5 +1,6 @@
 #pragma once
 #include <iterator>
+#include "random"
 
 namespace task {
 
@@ -10,6 +11,7 @@ struct ListNode {
   ListNode<T>* _node_next;
   void hook(ListNode<T>* position);
   void unhook();
+  static void swap_value(ListNode<T>&, ListNode<T>&);
 };
 
 template<class T, class Alloc = std::allocator<T>>
@@ -44,6 +46,7 @@ class list {
     pointer operator->() const;
     iterator& operator--();
     iterator operator--(int);
+    iterator move(size_t);
 
     bool operator==(iterator other) const;
     bool operator!=(iterator other) const;
@@ -70,6 +73,7 @@ class list {
     pointer operator->() const;
     const_iterator& operator--();
     const_iterator operator--(int);
+    const_iterator move(size_t);
 
     bool operator==(const_iterator other) const;
     bool operator!=(const_iterator other) const;
@@ -172,7 +176,7 @@ class list {
  private:
   Node_alloc_type self_node_alloc;
   T_alloc_type self_value_alloc;
-  Node main_node;
+  Node* main_node;
   size_type size_;
 
   void main_node_init();
@@ -195,7 +199,9 @@ class list {
   void iterator_init(input_iterator first, input_iterator last);
   template<class... Args>
   void insert_node(const_iterator pos, Args&& ... args);
-  void erase(iterator pos);
+  void erase_node(iterator pos);
+  std::pair<size_t, size_t> split(iterator, size_t, T);
+  void quick_sort(iterator, size_t);
 };
 
 template<class T>
@@ -210,6 +216,15 @@ template<class T>
 void ListNode<T>::unhook() {
   _node_prev->_node_next = _node_next;
   _node_next->_node_prev = _node_prev;
+}
+
+template<class T>
+void ListNode<T>::swap_value(ListNode<T>& first, ListNode<T>& second){
+  T* tmp_value = first.value;
+
+  first.value = second.value;
+
+  second.value = tmp_value;
 }
 
 template<class T, class Alloc>
@@ -263,6 +278,15 @@ template<class T, class Alloc>
 typename list<T, Alloc>::iterator list<T, Alloc>::iterator::operator--(int) {
   iterator tmp = *this;
   node_ = node_->_node_prev;
+  return tmp;
+}
+
+template<class T, class Alloc>
+typename list<T, Alloc>::iterator list<T, Alloc>::iterator::move(size_t dist) {
+  iterator tmp = iterator(this->node_);
+  for (size_t i = 0; i < dist; ++i){
+    ++tmp;
+  }
   return tmp;
 }
 
@@ -331,6 +355,15 @@ typename list<T, Alloc>::const_iterator list<T, Alloc>::const_iterator::operator
 }
 
 template<class T, class Alloc>
+typename list<T, Alloc>::const_iterator list<T, Alloc>::const_iterator::move(size_t dist) {
+  const_iterator tmp = const_iterator(this->node_);
+  for (size_t i = 0; i < dist; ++i){
+    ++tmp;
+  }
+  return tmp;
+}
+
+template<class T, class Alloc>
 bool list<T, Alloc>::const_iterator::operator==(const const_iterator other) const {
   return node_ == other.node_;
 }
@@ -390,11 +423,11 @@ typename list<T, Alloc>::Node* list<T, Alloc>::create_node(Args&& ... args) {
 
 template<class T, class Alloc>
 void list<T, Alloc>::move_nodes(list&& other) {
-  Node* other_node = &other.main_node;
+  Node* other_node = other.main_node;
   if (other_node == other_node->_node_next) {
     main_node_init();
   } else {
-    Node* this_node = &main_node;
+    Node* this_node = main_node;
     this_node->_node_next = other_node->_node_next;
     this_node->_node_prev = other_node->_node_prev;
     this_node->_node_next->_node_prev = this_node->_node_prev->_node_next = this_node;
@@ -405,14 +438,15 @@ void list<T, Alloc>::move_nodes(list&& other) {
 
 template<class T, class Alloc>
 void list<T, Alloc>::clear_nodes() {
-  Node* cur_node = main_node._node_next;
-  Node* main_node_ptr = main_node._node_next->_node_prev;
-  while (cur_node != main_node_ptr) {
+  Node* cur_node = main_node->_node_next;
+  while (cur_node != main_node) {
     auto tmp = cur_node;
     cur_node = tmp->_node_next;
     remove_node(tmp);
   }
+  set_size(0);
 }
+
 template<class T, class Alloc>
 void list<T, Alloc>::set_size(size_type n) { size_ = n; }
 
@@ -424,32 +458,32 @@ void list<T, Alloc>::decrease_size(list::size_type n) { size_ -= n; }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::iterator list<T, Alloc>::end() {
-  return iterator(&main_node);
+  return iterator(main_node);
 }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::iterator list<T, Alloc>::begin() {
-  return iterator(main_node._node_next);
+  return iterator(main_node->_node_next);
 }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::const_iterator list<T, Alloc>::cend() const {
-  return const_iterator(&main_node);
+  return const_iterator(main_node);
 }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::const_iterator list<T, Alloc>::cbegin() const {
-  return const_iterator(main_node._node_next);
+  return const_iterator(main_node->_node_next);
 }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::reverse_iterator list<T, Alloc>::rend() {
-  return reverse_iterator(begin());
+  return reverse_iterator(--begin());
 }
 
 template<class T, class Alloc>
 typename list<T, Alloc>::reverse_iterator list<T, Alloc>::rbegin() {
-  return reverse_iterator(end());
+  return reverse_iterator(--end());
 }
 
 template<class T, class Alloc>
@@ -464,8 +498,11 @@ typename list<T, Alloc>::const_reverse_iterator list<T, Alloc>::crbegin() const 
 
 template<class T, class Alloc>
 void list<T, Alloc>::main_node_init() {
-  main_node._node_prev = &main_node;
-  main_node._node_next = &main_node;
+  pointer value = alloc_value();
+  main_node = alloc_node();
+  main_node->_node_prev = main_node;
+  main_node->_node_next = main_node;
+  main_node->value = value;
   this->set_size(0);
 }
 
@@ -505,14 +542,15 @@ typename list<T, Alloc>::iterator list<T, Alloc>::insert(const_iterator pos, siz
 template<class T, class Alloc>
 typename list<T, Alloc>::iterator list<T, Alloc>::erase(list::const_iterator pos) {
   iterator iter = iterator(pos.node_->_node_next);
-  erase(pos.get_iterator());
+  erase_node(pos.get_iterator());
   return iter;
 }
 
 template<class T, class Alloc>
-void list<T, Alloc>::erase(list::iterator pos) {
+void list<T, Alloc>::erase_node(list::iterator pos) {
   pos.node_->unhook();
   remove_node(pos.node_);
+  decrease_size(1);
 }
 
 template<class T, class Alloc>
@@ -535,7 +573,7 @@ void list<T, Alloc>::push_back(T&& value) {
 
 template<class T, class Alloc>
 void list<T, Alloc>::pop_back() {
-  erase(iterator(main_node._node_prev));
+  erase(iterator(main_node->_node_prev));
 }
 
 template<class T, class Alloc>
@@ -625,13 +663,16 @@ list<T, Alloc>::~list() {
 }
 template<class T, class Alloc>
 list<T, Alloc>::list(const list& other) :
+    self_value_alloc(T_alloc_traits::select_on_container_copy_construction(other.get_allocator())),
     self_node_alloc(Node_alloc_traits::select_on_container_copy_construction(other.get_node_allocator())) {
   main_node_init();
   iterator_init(other.cbegin(), other.cend());
 }
 template<class T, class Alloc>
 list<T, Alloc>::list(list&& other):
-    self_node_alloc(std::move_if_noexcept(other.get_node_allocator())) {
+    self_value_alloc(T_alloc_traits::select_on_container_copy_construction(other.get_allocator())),
+    self_node_alloc(Node_alloc_traits::select_on_container_copy_construction(other.get_node_allocator())) {
+  main_node_init();
   move_nodes(std::move(other));
 }
 
@@ -640,22 +681,28 @@ list<T, Alloc>& list<T, Alloc>::operator=(const list& other) {
   if (this == &other) {
     return *this;
   }
-  auto other_alloc = other.get_allocator();
+  auto other_value_alloc = other.get_allocator();
+  auto other_node_alloc = other.get_node_allocator();
   clear();
-  this->self_node_alloc = Node_alloc_traits::select_on_container_copy_construction(other_alloc);
+  this->self_value_alloc = T_alloc_traits::select_on_container_copy_construction(other_value_alloc);
+  this->self_node_alloc = Node_alloc_traits::select_on_container_copy_construction(other_node_alloc);
+  main_node_init();
   iterator_init(other.cbegin(), other.cend());
   return *this;
 }
 
 template<class T, class Alloc>
 list<T, Alloc>& list<T, Alloc>::operator=(list&& other) {
+  self_value_alloc = other.get_allocator();
+  self_node_alloc = other.get_node_allocator();
+  main_node_init();
   move_nodes(std::move(other));
   return *this;
 }
 
 template<class T, class Alloc>
 bool list<T, Alloc>::empty() const {
-  return main_node._node_next == &main_node;
+  return main_node->_node_next == main_node;
 }
 
 template<class T, class Alloc>
@@ -704,6 +751,7 @@ void list<T, Alloc>::swap(list& other) {
   std::swap(this->main_node, other.main_node);
   std::swap(other.self_node_alloc, this->self_node_alloc);
   std::swap(other.self_value_alloc, this->self_value_alloc);
+  std::swap(other.size_, this->size_);
 }
 
 template<class T, class Alloc>
@@ -713,17 +761,22 @@ void list<T, Alloc>::merge(list& other) {
     iterator this_last = end();
     iterator other_first = other.begin();
     iterator other_last = other.end();
+    iterator next = other_first;
     while (this_first != this_last && other_first != other_last) {
       if (*other_first < *this_first) {
-        this->insert(this_first, other_first.operator*());
-        ++other_first;
+        ++next;
+        other_first.node_->unhook();
+        other_first.node_->hook(const_cast<Node*>(this_first.node_));
+        other_first = next;
       } else
         ++this_first;
     }
     if (other_first != other_last) {
       while (other_first != other_last) {
-        this->push_back(other_first.operator*());
-        ++other_first;
+        ++next;
+        other_first.node_->unhook();
+        other_first.node_->hook(const_cast<Node*>(this_last.node_));
+        other_first = next;
       }
     }
     this->increase_size(other.size());
@@ -737,9 +790,13 @@ void list<T, Alloc>::splice(list::const_iterator pos, list& other) {
   if (!other.empty()) {
 
     iterator other_first = other.begin();
+    iterator other_next = other.begin();
     iterator other_last = other.end();
     while (other_first != other_last) {
-      this->insert(pos, other_first.operator*());
+      ++other_next;
+      other_first.node_->unhook();
+      other_first.node_->hook(const_cast<Node*>(pos.node_));
+      other_first = other_next;
     }
     this->increase_size(other.size());
     other.set_size(0);
@@ -770,9 +827,17 @@ void list<T, Alloc>::remove(const T& value) {
 
 template<class T, class Alloc>
 void list<T, Alloc>::reverse() {
-  Node* tmp = main_node._node_prev;
-  main_node._node_prev = main_node._node_next;
-  main_node._node_next = tmp;
+  iterator next = begin();
+  iterator start = begin();
+  iterator finish = end();
+  while (start != finish){
+    ++next;
+    std::swap(start.node_->_node_next, start.node_->_node_prev);
+    start = next;
+  }
+  Node* tmp = main_node->_node_prev;
+  main_node->_node_prev = main_node->_node_next;
+  main_node->_node_next = tmp;
 }
 
 template<class T, class Alloc>
@@ -792,11 +857,51 @@ void list<T, Alloc>::unique() {
   }
 }
 
+template<class T, class Alloc>
+std::pair<size_t, size_t> list<T, Alloc>::split(
+    iterator start_iter, size_t length, T x) {
+  size_t lower_size = 0;
+  size_t same_size = 0;
+  iterator lower_iter = start_iter;
+  iterator same_iter = start_iter;
+  iterator move = start_iter;
+  for (size_t i = 0; i < length; ++i){
+    if (lower_size + same_size >= length) {
+      break;
+    }
+    if (*move < x) {
+      move.node_->swap_value(*move.node_, *lower_iter.node_);
+      ++lower_size;
+      ++lower_iter;
+      if (same_size > 0) {
+        move.node_->swap_value(*move.node_, *same_iter.node_);
+      }
+      ++same_iter;
+    } else if (*move == x) {
+      move.node_->swap_value(*move.node_, *same_iter.node_);
+      ++same_size;
+      ++same_iter;
+    }
+    ++move;
+  }
+  return {lower_size, same_size};
+}
 
-// TODO: add sort
+template<class T, class Alloc>
+void list<T, Alloc>::quick_sort(iterator start, size_t length){
+  if (length > 0) {
+    size_t i = std::rand() % length;
+    T x = *start.move(i);
+    std::pair<size_t, size_t> index_info = split(start, length, x);
+    quick_sort(start, index_info.first);
+    quick_sort(start.move(index_info.first + index_info.second),
+               length - (index_info.first + index_info.second));
+  }
+}
+
 template<class T, class Alloc>
 void list<T, Alloc>::sort() {
-
+  quick_sort(begin(), size_);
 }
 
 template<class T, class Alloc>
@@ -823,5 +928,4 @@ template<class T, class Alloc>
 const T& list<T, Alloc>::back() const {
   return *(--cend());
 }
-
-}  // namespace task
+}
