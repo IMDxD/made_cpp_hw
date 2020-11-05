@@ -1,5 +1,4 @@
 #pragma once
-#include "memory"
 
 namespace task {
 
@@ -221,7 +220,6 @@ SharedPtr<T>::~SharedPtr() {
       delete this->weak_counter;
     }
   }
-
 }
 
 template<class T>
@@ -339,7 +337,7 @@ WeakPtr<T>& WeakPtr<T>::operator=(WeakPtr<T>&& other) noexcept {
 
 template<class T>
 WeakPtr<T>::~WeakPtr<T>() {
-  if (this->weak_counter != nullptr and *this->weak_counter > 0) {
+  if (*this->weak_counter > 0) {
     *this->weak_counter -= 1;
   }
   if (*this->weak_counter == 0 && *this->shared_counter == 0){
