@@ -32,88 +32,102 @@ struct Used<0, ValueList<Head, Tail...>> {
   using type = ValueList<Head, Tail...>;
 };
 
+template <typename ...>
+struct Merge {};
 
-template<typename Vertices, typename VertUsed,
-    size_t end, bool is_used, bool is_same, typename VertexWayHead, typename VertexWayTail, typename Edges>
+template <typename Right>
+struct Merge<NullType, Right> {
+  using type = Right;
+};
+
+template <typename Left>
+struct Merge<Left, NullType> {
+  using type = Left;
+};
+
+template <typename Left, typename Right>
+struct Merge<Left, Right> {
+  using type = typename Concat<typename Left::Head, typename Merge<typename Left::Tail, Right>::type>::type;
+};
+
+
+template<typename Vertices, typename VertUsed, size_t end, bool is_used, bool is_same, bool computed, typename Edges>
 struct DFS {};
 
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead, typename VertexWayTail,
-    typename Edges>
-struct DFS<Vertices, VertUsed, end, false, false, VertexWayHead, VertexWayTail, Edges> {
+template<typename Vertices, typename VertUsed, size_t end>
+struct DFS<Vertices, VertUsed, end, true, false, true, NullType>{
 
- private:
-  using first_edge = typename Edges::Head;
-  using vertex_to = typename TypeAt<first_edge::to, Vertices>::type;
-  using vertex_edges = typename vertex_to::Edges;
-  static constexpr bool edge_to_is_used = Get<vertex_to::index, VertUsed>::value;
-  using updated_used = typename Set<VertexWayHead::index, true, VertUsed>::type;
-  using updated_way = typename Concat<VertexWayHead, VertexWayTail>::type;
-
- public:
-  static constexpr bool value = DFS<Vertices, updated_used, end, edge_to_is_used, vertex_to::index == end,
-                                    vertex_to, updated_way, vertex_edges >::value;
+  static constexpr bool value = false;
 };
 
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead, typename VertexWayTail>
-struct DFS<Vertices, VertUsed, end, false, false, VertexWayHead, VertexWayTail, NullType> {
+template<typename Vertices, typename VertUsed, size_t end>
+struct DFS<Vertices, VertUsed, end, false, false, true, NullType>{
 
- private:
-  using updated_way_head = typename VertexWayTail::Head;
-  using updated_way_tail = typename VertexWayTail::Tail;
-  using edges = typename updated_way_head::Edges;
-  using updated_used = typename Set<VertexWayHead::index, true, VertUsed>::type;
-
- public:
-  static constexpr bool value = DFS<Vertices, updated_used, end, true, false,
-                                    updated_way_head, updated_way_tail, edges>::value;
+  static constexpr bool value = false;
 };
 
 
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead, typename VertexWayTail>
-struct DFS<Vertices, VertUsed, end, true, false, VertexWayHead, VertexWayTail, NullType> {
+template<typename Vertices, typename VertUsed, size_t end, bool computed, typename Edges>
+struct DFS<Vertices, VertUsed, end, false, true, computed, Edges>{
 
- private:
-  using updated_way_head = typename VertexWayTail::Head;
-  using updated_way_tail = typename VertexWayTail::Tail;
-  using edges = typename updated_way_head::Edges;
-  using updated_used = typename Set<VertexWayHead::index, true, VertUsed>::type;
-
- public:
-  static constexpr bool value = DFS<Vertices, updated_used, end, true, false,
-                                    updated_way_head, updated_way_tail, edges>::value;
-};
-
-
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead, typename VertexWayTail,
-    typename Edges>
-struct DFS<Vertices, VertUsed, end, true, false, VertexWayHead, VertexWayTail, Edges> {
-
- private:
-  using edge = typename Edges::Head;
-  using edge_tail = typename Edges::Tail;
-  static constexpr bool edge_to_is_used = Get<edge::to, VertUsed>::value;
-
- public:
-  static constexpr bool value = DFS<Vertices, VertUsed, end, edge_to_is_used,
-                                    edge::to == end, VertexWayHead, VertexWayTail, edge_tail>::value;
-};
-
-
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead, typename VertexWayTail,
-     typename Edges>
-struct DFS<Vertices, VertUsed, end, false, true, VertexWayHead, VertexWayTail, Edges> {
-
- public:
   static constexpr bool value = true;
 };
 
-template<typename Vertices, typename VertUsed, size_t end, typename VertexWayHead>
-struct DFS<Vertices, VertUsed, end, true, false, VertexWayHead, NullType, NullType> {
+
+template<typename Vertices, typename VertUsed, size_t end, typename Edges>
+struct DFS<Vertices, VertUsed, end, false, false, true, Edges>{
+
+ private:
+
+  using new_vertex = typename TypeAt<Edges::Head::to, Vertices>::type;
+  using new_edges = typename Merge<typename new_vertex::Edges, Edges>::type;
+  using updated_used = typename Set<new_vertex::index, true, VertUsed>::type;
+  static constexpr bool is_used = Get<new_vertex::index, VertUsed>::value;
+  static constexpr bool is_same = new_vertex::index == end;
 
  public:
-  static constexpr bool value = false;
+
+  static constexpr bool value = DFS<Vertices, updated_used, end, is_used, is_same, false, new_edges>::value;
+};
+
+
+template<typename Vertices, typename VertUsed, size_t end, typename Edges>
+struct DFS<Vertices, VertUsed, end, false, false, false, Edges>{
+
+ public:
+
+  static constexpr bool value = DFS<Vertices, VertUsed, end, false, false, true, Edges>::value;
 
 };
+
+
+
+template<typename Vertices, typename VertUsed, size_t end, typename Edges>
+struct DFS<Vertices, VertUsed, end, true, false, true, Edges>{
+
+ private:
+
+  static constexpr bool is_used = Get<Edges::Head::to, VertUsed>::value;
+  static constexpr bool is_same = Edges::Head::to == end;
+
+ public:
+
+  static constexpr bool value = DFS<Vertices, VertUsed, end, is_used, is_same, false, Edges>::value;
+};
+
+
+template<typename Vertices, typename VertUsed, size_t end, typename Edges>
+struct DFS<Vertices, VertUsed, end, true, false, false, Edges>{
+
+ private:
+
+  using new_edges = typename Edges::Tail;
+
+ public:
+
+  static constexpr bool value = DFS<Vertices, VertUsed, end, true, false, true, new_edges>::value;
+};
+
 
 
 template<typename Graph, size_t start, size_t end>
@@ -121,13 +135,12 @@ struct PathExists {
 
  private:
   using vert_list = typename Graph::Vertices;
-  using vert_used = typename Used<Length<vert_list>::value>::type;
+  using vert_used = typename Set<start, true, typename Used<Length<vert_list>::value>::type>::type;
   using vert = typename TypeAt<start, vert_list>::type;
   using vert_edges = typename vert::Edges;
 
   public:
-  static constexpr bool value = DFS<vert_list, vert_used, end, false, start == end,
-                                    vert, NullType, vert_edges>::value;
+  static constexpr bool value = DFS<vert_list, vert_used, end, false, start == end, true, vert_edges>::value;
 };
 
 #endif /// MEANWHILE_IN_THE_SEVENTH_GALAXY_THIRD_VARIANT_DFS_H.
