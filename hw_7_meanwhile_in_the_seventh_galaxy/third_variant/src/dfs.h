@@ -32,50 +32,47 @@ struct Used<0, ValueList<Head, Tail...>> {
   using type = ValueList<Head, Tail...>;
 };
 
-template <typename ...>
+template<typename ...>
 struct Merge {};
 
-template <typename Right>
+template<typename Right>
 struct Merge<NullType, Right> {
   using type = Right;
 };
 
-template <typename Left>
+template<typename Left>
 struct Merge<Left, NullType> {
   using type = Left;
 };
 
-template <typename Left, typename Right>
+template<typename Left, typename Right>
 struct Merge<Left, Right> {
   using type = typename Concat<typename Left::Head, typename Merge<typename Left::Tail, Right>::type>::type;
 };
-
 
 template<typename Vertices, typename VertUsed, size_t end, bool is_used, bool is_same, bool computed, typename Edges>
 struct DFS {};
 
 template<typename Vertices, typename VertUsed, size_t end>
-struct DFS<Vertices, VertUsed, end, true, false, true, NullType>{
+struct DFS<Vertices, VertUsed, end, true, false, true, NullType> {
 
   static constexpr bool value = false;
 };
 
 template<typename Vertices, typename VertUsed, size_t end>
-struct DFS<Vertices, VertUsed, end, false, false, true, NullType>{
+struct DFS<Vertices, VertUsed, end, false, false, true, NullType> {
 
   static constexpr bool value = false;
 };
 
-
 template<typename Vertices, typename VertUsed, size_t end, bool computed, typename Edges>
-struct DFS<Vertices, VertUsed, end, false, true, computed, Edges>{
+struct DFS<Vertices, VertUsed, end, false, true, computed, Edges> {
 
   static constexpr bool value = true;
 };
 
-
 template<typename Vertices, typename VertUsed, size_t end, typename Edges>
-struct DFS<Vertices, VertUsed, end, false, false, true, Edges>{
+struct DFS<Vertices, VertUsed, end, false, false, true, Edges> {
 
  private:
 
@@ -90,9 +87,8 @@ struct DFS<Vertices, VertUsed, end, false, false, true, Edges>{
   static constexpr bool value = DFS<Vertices, updated_used, end, is_used, is_same, false, new_edges>::value;
 };
 
-
 template<typename Vertices, typename VertUsed, size_t end, typename Edges>
-struct DFS<Vertices, VertUsed, end, false, false, false, Edges>{
+struct DFS<Vertices, VertUsed, end, false, false, false, Edges> {
 
  public:
 
@@ -100,10 +96,8 @@ struct DFS<Vertices, VertUsed, end, false, false, false, Edges>{
 
 };
 
-
-
 template<typename Vertices, typename VertUsed, size_t end, typename Edges>
-struct DFS<Vertices, VertUsed, end, true, false, true, Edges>{
+struct DFS<Vertices, VertUsed, end, true, false, true, Edges> {
 
  private:
 
@@ -115,9 +109,8 @@ struct DFS<Vertices, VertUsed, end, true, false, true, Edges>{
   static constexpr bool value = DFS<Vertices, VertUsed, end, is_used, is_same, false, Edges>::value;
 };
 
-
 template<typename Vertices, typename VertUsed, size_t end, typename Edges>
-struct DFS<Vertices, VertUsed, end, true, false, false, Edges>{
+struct DFS<Vertices, VertUsed, end, true, false, false, Edges> {
 
  private:
 
@@ -128,8 +121,6 @@ struct DFS<Vertices, VertUsed, end, true, false, false, Edges>{
   static constexpr bool value = DFS<Vertices, VertUsed, end, true, false, true, new_edges>::value;
 };
 
-
-
 template<typename Graph, size_t start, size_t end>
 struct PathExists {
 
@@ -139,7 +130,7 @@ struct PathExists {
   using vert = typename TypeAt<start, vert_list>::type;
   using vert_edges = typename vert::Edges;
 
-  public:
+ public:
   static constexpr bool value = DFS<vert_list, vert_used, end, false, start == end, true, vert_edges>::value;
 };
 
